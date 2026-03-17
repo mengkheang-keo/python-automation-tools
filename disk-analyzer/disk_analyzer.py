@@ -10,7 +10,7 @@ sizeByExt = {}
 counts = {}
 fileData = []
 
-# function
+# function 
 def format_size(bytes):
     KB = 1024
     MB = KB ** 2
