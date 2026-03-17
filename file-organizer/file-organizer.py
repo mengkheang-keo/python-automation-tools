@@ -85,25 +85,3 @@ if confirmMove == "Y":
                 print(f"Skipped {file} (already in correct folder)")
 else:
     print("Operation cancelled!")
-
-
-
-
-
-
-
-
-
-
-
-
-# isMoveTrue = input("Would you like to moves files (Y/N):")
-# if isMoveTrue == "Y":       
-#     # move file to destination folder
-#     destination = os.path.join(category_folder, file)
-# else:
-#     print("Operation cancelled")
-
-#         print(file, category)
-#         print(file, "→", category_folder)
-#         shutil.move(full_path, destination)
