@@ -31,6 +31,20 @@ def create_folder(category):
     os.makedirs(category_folder, exist_ok=True)
     return category_folder
 
+# check unique and rename files
+def get_unique_destination(destination):
+    if not os.path.exists(destination):
+        return destination
+
+    base, ext = os.path.splitext(destination)
+    counter = 1
+
+    while True:
+        new_destination = f"{base} ({counter}){ext}"
+        if not os.path.exists(new_destination):
+            return new_destination
+        counter += 1
+
 # process #1 - preview
 preview = {}
 
@@ -70,12 +84,14 @@ if confirmMove == "Y":
 
         if os.path.isfile(full_path):
             name, ext = os.path.splitext(file)
+            ext = ext.lower()
 
             if ext == "":
                 ext = "no extension"
             category = get_category(ext)
             category_folder = create_folder(category)
             destination = os.path.join(category_folder, file)
+            destination = get_unique_destination(destination)
 
             # prevent recursive
             if full_path != destination:
