@@ -47,6 +47,20 @@ Features:
 
 ---
 
+### File Organizer
+Automatically organize files into categorized folders (e.g., Photos, Documents, Programs).
+
+Features:
+- File type categorization
+- Automatic folder creation
+- Preview before execution
+- Safe move (no overwrite)
+- Clean and structured output
+
+📂 Location: [file-organizer](./file-organizer)
+
+---
+
 ## Requirements
 
 - Python **3.9+**
