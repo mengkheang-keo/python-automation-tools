@@ -2,8 +2,10 @@
 import os
 
 # select folder
-inputFolder = input("Enter path: ")
-folder = inputFolder
+path = input("Enter path: ")
+
+# skip some unwanted windows folders
+skip_folders = ["$RECYCLE.BIN", "System Volume Information"]
 
 # variables
 sizeByExt = {}
@@ -27,18 +29,23 @@ def format_size(bytes):
 
 # process
 print("---------------FOLDER SUMMARY-----------------")
-print("Locations: ",folder)
+print("Locations: ",path)
 print("----------------------------------------------")
 print(f"{'Extension':25} | {'Count':5} | {'Total Size':10}")
 print("----------------------------------------------")
-for root, dirs, files in os.walk(folder):
+for root, dirs, files in os.walk(path):
+    # filter unwanted folders BEFORE walking into them
+    dirs[:] = [d for d in dirs if d not in skip_folders]
+
     for file in files:
         fullPath = os.path.join(root, file)
         name, ext = os.path.splitext(file)
         size = os.path.getsize(fullPath)
         ext = ext.lower()
+
         if ext == "":
             ext = "no extension"
+
         # count extension and size
         if ext not in counts:
             counts[ext] = 0
