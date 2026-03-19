@@ -1,9 +1,14 @@
 # import
 import os
+import time
 
 # select folder
 path = input("Enter path: ")
-if len(path) == 2 and path.endswith(":"):
+
+# format Path
+if len(path) == 1:
+    path += ":\\"
+elif len(path) == 2 and path.endswith(":"):
     path += "\\"
 
 # skip some unwanted windows folders
@@ -31,79 +36,107 @@ def format_size(bytes):
     
 # def search file name
 def searchFile(searchFileName):
-    index = 1
     searchLimit = 20
-    countFileFromSearch = 0
+    results = []
 
     print(f"{'No.':<3} {'Name':30} | {'Size':>10} | Path")
     print("-" * 103)
+
+    # give score ranking on search
     for file in fileData:
-        if searchFileName in file["name"].lower():
-            countFileFromSearch += 1
+        score = search_score(file, searchFileName)
 
-            if index <= searchLimit:
-                relative_path = os.path.relpath(file["path"], path)
+        if score > 0:
+            results.append((score, file))
 
-                if len(relative_path) > 50:
-                    relative_path = "..." + relative_path[-50:]
+    # sort by search ranking
+    results.sort(key=lambda x: x[0], reverse=True)
 
-                name = file["name"]
-                if len(name) > 30:
-                    name = name[:27] + "..."
-                    print(f"{index:<3} {name:30} | {format_size(file['size']):>10} | {relative_path}")
-                    index += 1
+    # prints
+    for index, (score, file) in enumerate(results[:searchLimit], 1):
+        relative_path = os.path.relpath(file["path"], path)
+
+        if len(relative_path) > 50:
+            relative_path = "..." + relative_path[-50:]
+
+        name = file["name"]
+        if len(name) > 30:
+            name = name[:27] + "..."
+
+        print(f"{index:<3} {name:30} | {format_size(file['size']):>10} | {relative_path}")
+
     print("-" *103)
-    if countFileFromSearch > searchLimit:
-        print(f"Found {countFileFromSearch} files (showing first {searchLimit})")
+
+    total_found = len(results)
+
+    if total_found > searchLimit:
+        print(f"Found {total_found} files (showing first {searchLimit})")
     else:
-        print(f"Found {countFileFromSearch} files")
+        print(f"Found {total_found} files")
+
+# def search scoring
+def search_score(file, search):
+    base = file["base"]
+    if search == base:
+        return 100
+    elif base.startswith(search):
+        return 50
+    elif search in base:
+        return 10
+    else:
+        return 0
 
 # def scan folder
 def scan(folder):
     try:
-            for item in os.listdir(folder):
-                fullPath = os.path.join(folder, item)
+        for item in os.listdir(folder):
+            fullPath = os.path.join(folder, item)
 
-                if os.path.isfile(fullPath):
-                    name, ext = os.path.splitext(item)
-                    size = os.path.getsize(fullPath)
-                    ext = ext.lower()
+            if os.path.isfile(fullPath):
+                name, ext = os.path.splitext(item)
+                size = os.path.getsize(fullPath)
+                ext = ext.lower()
 
-                    if ext == "":
-                        ext = "no extension"
+                if ext == "":
+                    ext = "no extension"
 
-                    if ext not in counts:
-                        counts[ext] = 0
-                        sizeByExt[ext] = 0
+                if ext not in counts:
+                    counts[ext] = 0
+                    sizeByExt[ext] = 0
 
-                    counts[ext] += 1
-                    sizeByExt[ext] += size
-                    
-                    # append fileData[]
-                    fileData.append({
-                        "name": item,
-                        "path": fullPath,
-                        "ext": ext,
-                        "size": size
-                    })
+                counts[ext] += 1
+                sizeByExt[ext] += size
                 
-                elif os.path.isdir(fullPath):
-                    if item in skip_folders:
-                        continue
-                    scan(fullPath)
+                # append fileData[]
+                fileData.append({
+                    "name": item,
+                    "base": name.lower(),
+                    "ext": ext.lower(),
+                    "path": fullPath,
+                    "size": size
+                })
+            
+            elif os.path.isdir(fullPath):
+                if item in skip_folders:
+                    continue
+                scan(fullPath)
     except PermissionError:
         pass
-
 
 # process
 print("---------------FOLDER SUMMARY-----------------")
 print("Locations: ",path)
-print("----------------------------------------------")
-print(f"{'Extension':25} | {'Count':5} | {'Total Size':10}")
-print("----------------------------------------------")
+print("Scanning... this may take a while for large drives.")
+
+# duration for scanning process
+startTime = time.time()
 
 # def scan folder process
 scan(path)
+
+print("----------------------------------------------")
+print(f"{'Extension':25} | {'Count':5} | {'Total Size':10}")
+print("----------------------------------------------")
 
 # print output
 for ext in sorted(sizeByExt, key=sizeByExt.get, reverse=True):
@@ -114,10 +147,12 @@ totalFiles = sum(counts.values())
 totalSize = sum(sizeByExt.values())
 print(f"Total Files: {totalFiles}")
 print(f"Total Size: {format_size(totalSize)}")
-
+print("-" * 46)
+print(f"Total time taken: {(time.time() - startTime):.2f}s")
 print("----------------------------------------------")
-functionChoice = input("More functions: ")
-if functionChoice == "1":
-    searchFileName = input("Search: ").lower()
+
+searchFileName = input("\nSearch (or press Enter to exit): ").lower()
+
+if searchFileName:
     print("-" *103)
     searchFile(searchFileName)
